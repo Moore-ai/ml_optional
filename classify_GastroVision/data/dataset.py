@@ -19,6 +19,9 @@ class _SubsetWithTransform(Subset):
             img = self.transform(img)
         return img, label
 
+    def __getitems__(self, indices):
+        return [self.__getitem__(idx) for idx in indices]
+
 
 def _stratified_split(labels, train_ratio, val_ratio, test_ratio):
     """三层分层拆分，极小类别时回退到随机拆分。"""
