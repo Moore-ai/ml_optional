@@ -59,7 +59,7 @@ def get_dataloaders():
 
     # WeightedRandomSampler: 样本权重与类别频率成反比
     class_counts = np.bincount(targets[train_idx])
-    sample_weights = 1.0 / class_counts[targets[train_idx]]
+    sample_weights = (1.0 / class_counts[targets[train_idx]]).tolist()
     sampler = WeightedRandomSampler(sample_weights, len(sample_weights), replacement=True)
 
     train_loader = DataLoader(

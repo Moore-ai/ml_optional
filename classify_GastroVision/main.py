@@ -1,5 +1,7 @@
+# pyright: reportPrivateImportUsage=false, reportArgumentType=false
 import argparse
 import torch
+from torch import cat, device as torch_device
 from pathlib import Path
 
 from config import *
@@ -34,8 +36,8 @@ def run_train():
         all_preds.append(outputs.argmax(dim=1).cpu())
         all_targets.append(labels)
 
-    preds = torch.cat(all_preds).numpy()
-    targets = torch.cat(all_targets).numpy()
+    preds = cat(all_preds).numpy()
+    targets = cat(all_targets).numpy()
 
     metrics = compute_metrics(preds, targets)
     per_class = compute_per_class_metrics(preds, targets, class_names)
@@ -60,7 +62,7 @@ def run_eval(checkpoint_path):
     model = GastroClassifier()
     model.load_checkpoint(Path(checkpoint_path))
     model.eval()
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = torch_device("cuda" if torch.cuda.is_available() else "cpu")
     model = model.to(device)
 
     all_preds, all_targets = [], []
@@ -71,8 +73,8 @@ def run_eval(checkpoint_path):
         all_preds.append(outputs.argmax(dim=1).cpu())
         all_targets.append(labels)
 
-    preds = torch.cat(all_preds).numpy()
-    targets = torch.cat(all_targets).numpy()
+    preds = cat(all_preds).numpy()
+    targets = cat(all_targets).numpy()
     metrics = compute_metrics(preds, targets)
     per_class = compute_per_class_metrics(preds, targets, class_names)
 

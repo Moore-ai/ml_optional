@@ -1,8 +1,10 @@
+# pyright: reportPrivateImportUsage=false
 import torch
 import torch.nn as nn
-from torch.cuda.amp import autocast, GradScaler
+from torch import bincount, cat, device as torch_device, tensor, bfloat16
+from torch.amp import autocast, GradScaler
 from torch.utils.tensorboard import SummaryWriter
-from tqdm import tqdm
+from tqdm import tqdm  # type: ignore[reportMissingModuleSource]
 
 from config import *
 from training.evaluate import compute_metrics
@@ -17,7 +19,7 @@ def train_one_epoch(model, loader, criterion, optimizer, scaler, device):
         images, labels = images.to(device), labels.to(device)
         optimizer.zero_grad()
 
-        with autocast(device_type="cuda", dtype=torch.bfloat16):
+        with autocast(device_type="cuda", dtype=bfloat16):
             outputs = model(images)
             loss = criterion(outputs, labels)
 
@@ -29,8 +31,8 @@ def train_one_epoch(model, loader, criterion, optimizer, scaler, device):
         all_preds.append(outputs.argmax(dim=1).cpu())
         all_labels.append(labels.cpu())
 
-    preds = torch.cat(all_preds).numpy()
-    targets = torch.cat(all_labels).numpy()
+    preds = cat(all_preds).numpy()
+    targets = cat(all_labels).numpy()
     metrics = compute_metrics(preds, targets)
     return running_loss / len(loader.dataset), metrics["accuracy"], metrics["macro_f1"]
 
@@ -44,7 +46,7 @@ def validate(model, loader, criterion, device):
     for images, labels in tqdm(loader, desc="Val", leave=False):
         images, labels = images.to(device), labels.to(device)
 
-        with autocast(device_type="cuda", dtype=torch.bfloat16):
+        with autocast(device_type="cuda", dtype=bfloat16):
             outputs = model(images)
             loss = criterion(outputs, labels)
 
@@ -52,20 +54,20 @@ def validate(model, loader, criterion, device):
         all_preds.append(outputs.argmax(dim=1).cpu())
         all_labels.append(labels.cpu())
 
-    preds = torch.cat(all_preds).numpy()
-    targets = torch.cat(all_labels).numpy()
+    preds = cat(all_preds).numpy()
+    targets = cat(all_labels).numpy()
     metrics = compute_metrics(preds, targets)
     return running_loss / len(loader.dataset), metrics["accuracy"], metrics["macro_f1"]
 
 
 def train_model(model, train_loader, val_loader, class_names):
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = torch_device("cuda" if torch.cuda.is_available() else "cpu")
     model = model.to(device)
     print(f"Device: {device}")
 
     # 类别加权损失
-    class_counts = torch.bincount(
-        torch.tensor([label for _, label in train_loader.dataset])
+    class_counts = bincount(
+        tensor([label for _, label in train_loader.dataset])
     )
     weights = (1.0 / class_counts.float()).to(device)
     weights = weights / weights.sum()

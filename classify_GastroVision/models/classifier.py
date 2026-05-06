@@ -13,7 +13,7 @@ class GastroClassifier(nn.Module):
         super().__init__()
         weights = EfficientNet_V2_S_Weights.DEFAULT
         self.backbone = efficientnet_v2_s(weights=weights)
-        in_features = self.backbone.classifier[1].in_features  # 1280
+        in_features: int = self.backbone.classifier[1].in_features  # type: ignore[assignment]
 
         self.backbone.classifier = nn.Sequential(
             nn.Dropout(p=0.3, inplace=True),
