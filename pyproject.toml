@@ -9,6 +9,7 @@ dependencies = [
     "numpy>=2.4.3",
     "scikit-learn>=1.8.0",
     "matplotlib>=3.10.9",
+    "tensorboard>=2.18.0",
 ]
 
 [tool.uv]
