@@ -4,7 +4,7 @@ import torch.nn as nn
 from torch import bincount, cat, device as torch_device, tensor, bfloat16
 from torch.amp import autocast, GradScaler
 from torch.utils.tensorboard import SummaryWriter
-from tqdm import tqdm  # type: ignore[reportMissingModuleSource]
+from tqdm import tqdm
 
 from config import *
 from training.evaluate import compute_metrics
