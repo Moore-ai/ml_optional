@@ -1,5 +1,8 @@
 *.md
 !README.md
+!GastroVision.md
 
 __pycache__/
 *.pyc
+
+GastroVision/
