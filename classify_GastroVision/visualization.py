@@ -37,7 +37,7 @@ def plot_confusion_matrix(cm, class_names, save_dir=FIGURE_DIR):
     save_dir.mkdir(parents=True, exist_ok=True)
 
     fig, ax = plt.subplots(figsize=(22, 22))
-    im = ax.imshow(cm, interpolation="nearest", cmap=plt.cm.Blues)
+    im = ax.imshow(cm, interpolation="nearest", cmap="Blues")
     plt.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
 
     tick_marks = np.arange(len(class_names))
