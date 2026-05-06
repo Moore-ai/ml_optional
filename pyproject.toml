@@ -13,4 +13,7 @@ dependencies = [
 ]
 
 [tool.uv]
-dev-dependencies = []
+dev-dependencies = [
+    "pyright>=1.1.409",
+    "types-tqdm>=4.67.3.20260408",
+]
