@@ -22,7 +22,6 @@ def train_one_epoch(model, loader, criterion, optimizer, scaler, device):
         images, labels = images.to(device), labels.to(device)
         optimizer.zero_grad()
 
-        # MixUp / CutMix（仅在 USE_MIXUP=True 时启用）
         lam, labels_a, labels_b = 0.0, labels, labels
         use_mix = USE_MIXUP and torch.rand(1).item() < MIXUP_PROB
         if use_mix:
@@ -33,10 +32,10 @@ def train_one_epoch(model, loader, criterion, optimizer, scaler, device):
 
         with autocast(device_type="cuda", dtype=bfloat16):
             outputs = model(images)
-            if use_mix:
-                loss = lam * criterion(outputs, labels_a) + (1 - lam) * criterion(outputs, labels_b)
-            else:
-                loss = criterion(outputs, labels)
+            loss = (
+                lam * criterion(outputs, labels_a) + (1 - lam) * criterion(outputs, labels_b)
+                if use_mix else criterion(outputs, labels)
+            )
 
         scaler.scale(loss).backward()
         scaler.step(optimizer)
@@ -77,7 +76,7 @@ def validate(model, loader, criterion, device):
 
 def mixup_data(x, y, alpha=1.0):
     """返回 (mixed_x, y_a, y_b, lam)。"""
-    lam = float(np.random.beta(alpha, alpha)) if alpha > 0 else 1.0
+    lam = float(torch.distributions.Beta(alpha, alpha).sample()) if alpha > 0 else 1.0
     idx = randperm(x.size(0), device=x.device)
     mixed_x = lam * x + (1 - lam) * x[idx]
     return mixed_x, y, y[idx], lam
@@ -85,10 +84,10 @@ def mixup_data(x, y, alpha=1.0):
 
 def cutmix_data(x, y, alpha=1.0):
     """返回 (mixed_x, y_a, y_b, lam)。"""
-    lam = float(np.random.beta(alpha, alpha)) if alpha > 0 else 1.0
+    lam = float(torch.distributions.Beta(alpha, alpha).sample()) if alpha > 0 else 1.0
     idx = randperm(x.size(0), device=x.device)
     _, _, H, W = x.shape
-    cx, cy = np.random.randint(W), np.random.randint(H)
+    cx, cy = int(torch.randint(W, (1,))), int(torch.randint(H, (1,)))
     rw, rh = int(W * np.sqrt(1 - lam)), int(H * np.sqrt(1 - lam))
     x1, y1 = max(cx - rw // 2, 0), max(cy - rh // 2, 0)
     x2, y2 = min(cx + rw // 2, W), min(cy + rh // 2, H)

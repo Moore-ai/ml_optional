@@ -43,7 +43,8 @@ def predict_with_tta(model, image, use_tta=True):
     if not use_tta:
         return model(image.unsqueeze(0)).squeeze(0)
 
-    outputs = []
-    outputs.append(model(image.unsqueeze(0)).squeeze(0))       # 原始
-    outputs.append(model(image.flip(-1).unsqueeze(0)).squeeze(0))  # 水平翻转
+    outputs = [
+        model(image.unsqueeze(0)).squeeze(0),
+        model(image.flip(-1).unsqueeze(0)).squeeze(0),
+    ]
     return torch.stack(outputs).mean(dim=0)
