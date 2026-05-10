@@ -16,11 +16,8 @@ def _find_latest_run():
     """扫描 OUTPUT_BASE 找最新时间戳子目录，返回其 Path 或 None。"""
     if not OUTPUT_BASE.exists():
         return None
-    dirs = sorted(OUTPUT_BASE.iterdir(), reverse=True)
-    for d in dirs:
-        if d.is_dir() and (d / "checkpoints" / "best.pth").exists():
-            return d
-    return None
+    runs = [d for d in OUTPUT_BASE.iterdir() if (d / "checkpoints" / "best.pth").exists()]
+    return max(runs, key=lambda d: d.name) if runs else None
 
 
 def run_train():
@@ -33,7 +30,6 @@ def run_train():
     history, best_f1, run_dir = train_model(model, train_loader, val_loader, class_names)
     print(f"\nBest validation Macro F1: {best_f1:.4f}")
 
-    # 测试集评估
     print("\nEvaluating on test set...")
     model.load_checkpoint(run_dir / "checkpoints" / "best.pth")
     model.eval()
@@ -57,7 +53,6 @@ def run_train():
     print(f"Test Macro F1:     {metrics['macro_f1']:.4f}")
     print(f"Test Weighted F1:  {metrics['weighted_f1']:.4f}")
 
-    # 可视化（保存到 run_dir / "figures"）
     print("\nGenerating visualizations...")
     plot_all_results(history, per_class, metrics["confusion_matrix"], class_names,
                      save_dir=run_dir / "figures")
@@ -93,7 +88,7 @@ def run_eval(checkpoint_path, run_dir=None):
     print(f"Test Accuracy:     {metrics['accuracy']:.4f}")
     print(f"Test Macro F1:     {metrics['macro_f1']:.4f}")
 
-    fig_dir = (Path(run_dir) / "figures") if run_dir else FIGURE_DIR
+    fig_dir = (run_dir / "figures") if run_dir else FIGURE_DIR
     plot_confusion_matrix(metrics["confusion_matrix"], class_names, save_dir=fig_dir)
     plot_per_class_metrics(per_class, class_names, save_dir=fig_dir)
 
