@@ -36,3 +36,28 @@ AMP_DTYPE = "bfloat16"
 
 # 可视化
 FIGURE_DPI = 150
+
+# === 精度改进开关 ===
+
+# Focal Loss（True 时替代 CrossEntropyLoss）
+USE_FOCAL_LOSS = True
+FOCAL_GAMMA = 2.0
+
+# RandAugment（True 时替代手动增强）
+USE_RAND_AUGMENT = True
+RA_NUM_OPS = 2
+RA_MAGNITUDE = 9
+
+# MixUp / CutMix
+USE_MIXUP = True
+MIXUP_ALPHA = 1.0
+CUTMIX_ALPHA = 1.0
+MIXUP_PROB = 0.5
+
+# Test-Time Augmentation
+USE_TTA = True
+
+# CosineAnnealingWarmRestarts（True 时替代 CosineAnnealingLR）
+USE_WARM_RESTARTS = True
+WR_T0 = 10
+WR_T_MULT = 2
