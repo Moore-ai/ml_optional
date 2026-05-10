@@ -12,3 +12,6 @@ classify_GastroVision/output/logs/
 !classify_GastroVision/output/TRAINING_REPORT.md
 
 Hyper-Kvasir/
+classify_Hyper_Kvasir/output/checkpoints/
+classify_Hyper_Kvasir/output/logs/
+!classify_Hyper_Kvasir/output/TRAINING_REPORT.md
