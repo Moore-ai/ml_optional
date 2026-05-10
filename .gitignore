@@ -6,4 +6,6 @@ __pycache__/
 *.pyc
 
 GastroVision/
-classify_GastroVision/output/
+classify_GastroVision/output/checkpoints/
+classify_GastroVision/output/logs/
+!classify_GastroVision/output/TRAINING_REPORT.md
