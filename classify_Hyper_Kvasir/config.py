@@ -3,10 +3,10 @@ from pathlib import Path
 # 路径
 DATA_ROOT = Path("Hyper-Kvasir/labeled-images")
 CLASSIFY_DIR = Path("classify_Hyper_Kvasir")
-OUTPUT_DIR = CLASSIFY_DIR / "output"
-LOG_DIR = OUTPUT_DIR / "logs"
-FIGURE_DIR = OUTPUT_DIR / "figures"
-CHECKPOINT_DIR = OUTPUT_DIR / "checkpoints"
+OUTPUT_BASE = CLASSIFY_DIR / "output"
+LOG_DIR = OUTPUT_BASE / "logs"
+FIGURE_DIR = OUTPUT_BASE / "figures"
+CHECKPOINT_DIR = OUTPUT_BASE / "checkpoints"
 
 # 数据
 IMG_SIZE = 384
