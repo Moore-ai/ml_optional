@@ -1,4 +1,5 @@
 import numpy as np
+import torch
 from sklearn.metrics import (
     accuracy_score, f1_score, precision_score, recall_score,
     confusion_matrix,
@@ -30,3 +31,20 @@ def compute_per_class_metrics(predictions, targets, class_names):
         }
         for i, name in enumerate(class_names)
     }
+
+
+@torch.no_grad()
+def predict_with_tta(model, image, use_tta=True):
+    """对单张图执行 TTA 推理，返回平均 logits。
+
+    TTA 视图：原始 + 水平翻转（2 视图）。
+    当 use_tta=False 时等价于普通 forward。
+    """
+    if not use_tta:
+        return model(image.unsqueeze(0)).squeeze(0)
+
+    outputs = [
+        model(image.unsqueeze(0)).squeeze(0),
+        model(image.flip(-1).unsqueeze(0)).squeeze(0),
+    ]
+    return torch.stack(outputs).mean(dim=0)

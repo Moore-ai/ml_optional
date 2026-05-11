@@ -1,4 +1,5 @@
 # pyright: reportPrivateImportUsage=false
+from datetime import datetime
 import torch
 import torch.nn as nn
 from torch import bincount, cat, device as torch_device, tensor, bfloat16
@@ -74,17 +75,23 @@ def train_model(model, train_loader, val_loader, class_names):
 
     criterion = nn.CrossEntropyLoss(weight=weights, label_smoothing=LABEL_SMOOTHING)
     scaler = GradScaler("cuda")
-    writer = SummaryWriter(log_dir=str(LOG_DIR))
+
+    # Create timestamped run directory
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    run_dir = OUTPUT_BASE / timestamp
+    ckpt_dir = run_dir / "checkpoints"
+    fig_dir = run_dir / "figures"
+    log_dir = run_dir / "logs"
+    for d in [run_dir, ckpt_dir, fig_dir, log_dir]:
+        d.mkdir(parents=True, exist_ok=True)
+
+    writer = SummaryWriter(log_dir=str(log_dir))
 
     history = {k: [] for k in ("train_loss", "val_loss", "train_acc", "val_acc",
                                 "train_f1", "val_f1")}
     best_f1 = 0.0
     patience = 0
     global_step = 0
-
-    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-    CHECKPOINT_DIR.mkdir(parents=True, exist_ok=True)
-    FIGURE_DIR.mkdir(parents=True, exist_ok=True)
 
     # === Phase 1: 冻结主干，只训练分类头 ===
     print("Phase 1: Training head (frozen backbone)")
@@ -122,7 +129,7 @@ def train_model(model, train_loader, val_loader, class_names):
         if val_f1 > best_f1:
             best_f1 = val_f1
             model.save_checkpoint(
-                CHECKPOINT_DIR / "best.pth", epoch, optimizer, scheduler,
+                ckpt_dir / "best.pth", epoch, optimizer, scheduler,
                 {"val_f1": val_f1, "val_acc": val_acc},
             )
 
@@ -160,7 +167,7 @@ def train_model(model, train_loader, val_loader, class_names):
             best_f1 = val_f1
             patience = 0
             model.save_checkpoint(
-                CHECKPOINT_DIR / "best.pth", epoch, optimizer, scheduler,
+                ckpt_dir / "best.pth", epoch, optimizer, scheduler,
                 {"val_f1": val_f1, "val_acc": val_acc},
             )
             print(f"  => New best (F1: {val_f1:.4f})")
@@ -171,9 +178,9 @@ def train_model(model, train_loader, val_loader, class_names):
                 break
 
         model.save_checkpoint(
-            CHECKPOINT_DIR / "latest.pth", epoch, optimizer, scheduler,
+            ckpt_dir / "latest.pth", epoch, optimizer, scheduler,
             {"val_f1": val_f1, "val_acc": val_acc},
         )
 
     writer.close()
-    return history, best_f1
+    return history, best_f1, run_dir

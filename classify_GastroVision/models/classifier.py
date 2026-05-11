@@ -3,7 +3,7 @@ import torch.nn as nn
 from pathlib import Path
 from torchvision.models import efficientnet_v2_s, EfficientNet_V2_S_Weights
 
-from config import NUM_CLASSES
+from classify_GastroVision.config import NUM_CLASSES
 
 
 class GastroClassifier(nn.Module):

@@ -3,7 +3,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 
-from config import *
+from classify_GastroVision.config import *
 
 
 def plot_training_curves(history, save_dir=FIGURE_DIR):
