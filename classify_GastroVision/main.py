@@ -4,12 +4,12 @@ import torch
 from torch import cat, device as torch_device
 from pathlib import Path
 
-from config import *
-from data.dataset import get_dataloaders
-from models.classifier import GastroClassifier
-from training.train import train_model
-from training.evaluate import compute_metrics, compute_per_class_metrics
-from visualization import plot_all_results, plot_confusion_matrix, plot_per_class_metrics
+from classify_GastroVision.config import *
+from classify_GastroVision.data.dataset import get_dataloaders
+from classify_GastroVision.models.classifier import GastroClassifier
+from classify_GastroVision.training.train import train_model
+from classify_GastroVision.training.evaluate import compute_metrics, compute_per_class_metrics
+from classify_GastroVision.visualization import plot_all_results, plot_confusion_matrix, plot_per_class_metrics
 
 
 def _find_latest_run():

@@ -3,8 +3,8 @@ from torch.utils.data import DataLoader, Subset, WeightedRandomSampler
 from torchvision.datasets import ImageFolder
 from sklearn.model_selection import train_test_split
 
-from config import *
-from data.transforms import train_transform, val_transform, test_transform
+from classify_GastroVision.config import *
+from classify_GastroVision.data.transforms import train_transform, val_transform, test_transform
 
 
 class _SubsetWithTransform(Subset):
