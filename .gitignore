@@ -1,25 +1,14 @@
 *.md
-!README.md
-!GastroVision.md
-!Hyper-Kvasir.md
 
 __pycache__/
 *.pyc
 
-GastroVision/
-classify_GastroVision/output/checkpoints/
-classify_GastroVision/output/logs/
 classify_GastroVision/output/*/checkpoints/
 classify_GastroVision/output/*/logs/
 classify_GastroVision/output/*/figures/
-!classify_GastroVision/output/TRAINING_REPORT.md
 !classify_GastroVision/output/*/TRAINING_REPORT.md
 
-Hyper-Kvasir/
-classify_Hyper_Kvasir/output/checkpoints/
-classify_Hyper_Kvasir/output/logs/
 classify_Hyper_Kvasir/output/*/checkpoints/
 classify_Hyper_Kvasir/output/*/logs/
 classify_Hyper_Kvasir/output/*/figures/
-!classify_Hyper_Kvasir/output/TRAINING_REPORT.md
 !classify_Hyper_Kvasir/output/*/TRAINING_REPORT.md
