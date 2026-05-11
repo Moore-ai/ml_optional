@@ -20,7 +20,9 @@ class FocalLoss(nn.Module):
         self.gamma = gamma
 
     def forward(self, inputs, targets):
-        ce = F.cross_entropy(inputs, targets, weight=self.alpha, reduction="none")
-        pt = torch.exp(-ce)
-        loss = ((1 - pt) ** self.gamma) * ce
+        ce_raw = F.cross_entropy(inputs, targets, reduction="none")
+        pt = torch.exp(-ce_raw)
+        loss = ((1 - pt) ** self.gamma) * ce_raw
+        if self.alpha is not None:
+            loss = self.alpha[targets] * loss
         return loss.mean()
