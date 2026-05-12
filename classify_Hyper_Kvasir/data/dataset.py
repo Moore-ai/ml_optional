@@ -99,6 +99,18 @@ def get_dataloaders():
         targets, TRAIN_RATIO, VAL_RATIO, TEST_RATIO,
     )
 
+    # 少数类过采样（使用固定种子确保可复现性）
+    _oversample_rng = np.random.default_rng(42)
+    train_labels = targets[train_idx]
+    augmented_idx = list(train_idx)
+    for cls in range(NUM_CLASSES):
+        cls_indices = np.where(train_labels == cls)[0]
+        deficit = MIN_SAMPLES - len(cls_indices)
+        if deficit > 0:
+            extra = _oversample_rng.choice(cls_indices, size=deficit, replace=True)
+            augmented_idx.extend(train_idx[extra].tolist())
+    train_idx = np.array(augmented_idx)
+
     train_set = _SubsetWithTransform(dataset, train_idx, train_transform)
     val_set = _SubsetWithTransform(dataset, val_idx, val_transform)
     test_set = _SubsetWithTransform(dataset, test_idx, test_transform)

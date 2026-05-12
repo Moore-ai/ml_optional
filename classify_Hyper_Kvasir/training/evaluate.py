@@ -48,3 +48,24 @@ def predict_with_tta(model, image, use_tta=True):
         model(image.flip(-1).unsqueeze(0)).squeeze(0),
     ]
     return torch.stack(outputs).mean(dim=0)
+
+
+def save_per_class_csv(per_class, targets, class_names, csv_path):
+    """保存逐类 Precision / Recall / F1 / 样本数到 CSV。
+
+    Args:
+        per_class: compute_per_class_metrics 返回的 dict[class_name, {precision, recall, f1}]
+        targets: 真实标签数组 (n,)
+        class_names: 类别名列表 [str]
+        csv_path: 输出路径
+    """
+    num_samples = np.bincount(targets, minlength=len(class_names))
+    with open(csv_path, "w") as f:
+        f.write("class,precision,recall,f1,num_samples\n")
+        for i, name in enumerate(class_names):
+            f.write(
+                f'{name},{per_class[name]["precision"]:.4f},'
+                f'{per_class[name]["recall"]:.4f},'
+                f'{per_class[name]["f1"]:.4f},'
+                f'{num_samples[i]}\n'
+            )
