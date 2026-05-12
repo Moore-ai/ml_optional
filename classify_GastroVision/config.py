@@ -42,7 +42,7 @@ FIGURE_DPI = 150
 
 # Focal Loss（True 时替代 CrossEntropyLoss）
 USE_FOCAL_LOSS = True
-FOCAL_GAMMA = 0.5
+FOCAL_GAMMA = 1.0
 
 # RandAugment（True 时替代手动增强）
 USE_RAND_AUGMENT = True
@@ -53,7 +53,7 @@ RA_MAGNITUDE = 5
 USE_MIXUP = True
 MIXUP_ALPHA = 1.0
 CUTMIX_ALPHA = 1.0
-MIXUP_PROB = 0.5
+MIXUP_PROB = 0.0
 
 # Test-Time Augmentation
 USE_TTA = True
