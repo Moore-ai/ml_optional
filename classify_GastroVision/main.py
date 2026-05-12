@@ -8,7 +8,7 @@ from classify_GastroVision.config import *
 from classify_GastroVision.data.dataset import get_dataloaders
 from classify_GastroVision.models.classifier import GastroClassifier
 from classify_GastroVision.training.train import train_model
-from classify_GastroVision.training.evaluate import compute_metrics, compute_per_class_metrics
+from classify_GastroVision.training.evaluate import compute_metrics, compute_per_class_metrics, save_per_class_csv
 from classify_GastroVision.visualization import plot_all_results, plot_confusion_matrix, plot_per_class_metrics
 
 
@@ -53,6 +53,10 @@ def run_train():
     print(f"Test Macro F1:     {metrics['macro_f1']:.4f}")
     print(f"Test Weighted F1:  {metrics['weighted_f1']:.4f}")
 
+    csv_path = run_dir / "per_class_metrics.csv"
+    save_per_class_csv(per_class, targets, class_names, csv_path)
+    print(f"Per-class metrics saved to {csv_path}")
+
     print("\nGenerating visualizations...")
     plot_all_results(history, per_class, metrics["confusion_matrix"], class_names,
                      save_dir=run_dir / "figures")
@@ -87,6 +91,11 @@ def run_eval(checkpoint_path, run_dir=None):
 
     print(f"Test Accuracy:     {metrics['accuracy']:.4f}")
     print(f"Test Macro F1:     {metrics['macro_f1']:.4f}")
+
+    metric_dir = (run_dir if run_dir else FIGURE_DIR)
+    csv_path = metric_dir / "per_class_metrics.csv"
+    save_per_class_csv(per_class, targets, class_names, csv_path)
+    print(f"Per-class metrics saved to {csv_path}")
 
     fig_dir = (run_dir / "figures") if run_dir else FIGURE_DIR
     plot_confusion_matrix(metrics["confusion_matrix"], class_names, save_dir=fig_dir)
