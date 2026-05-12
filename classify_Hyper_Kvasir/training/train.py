@@ -1,14 +1,16 @@
 # pyright: reportPrivateImportUsage=false
 from datetime import datetime
+import numpy as np
 import torch
 import torch.nn as nn
-from torch import bincount, cat, device as torch_device, tensor, bfloat16
+from torch import bincount, cat, device as torch_device, tensor, bfloat16, randperm
 from torch.amp import autocast, GradScaler
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
 from classify_Hyper_Kvasir.config import *
 from classify_Hyper_Kvasir.training.evaluate import compute_metrics
+from classify_Hyper_Kvasir.training.losses import FocalLoss
 
 
 def train_one_epoch(model, loader, criterion, optimizer, scaler, device):
@@ -20,9 +22,20 @@ def train_one_epoch(model, loader, criterion, optimizer, scaler, device):
         images, labels = images.to(device), labels.to(device)
         optimizer.zero_grad()
 
+        lam, labels_a, labels_b = 0.0, labels, labels
+        use_mix = USE_MIXUP and torch.rand(1).item() < MIXUP_PROB
+        if use_mix:
+            if torch.rand(1).item() < 0.5:
+                images, labels_a, labels_b, lam = mixup_data(images, labels, MIXUP_ALPHA)
+            else:
+                images, labels_a, labels_b, lam = cutmix_data(images, labels, CUTMIX_ALPHA)
+
         with autocast(device_type="cuda", dtype=bfloat16):
             outputs = model(images)
-            loss = criterion(outputs, labels)
+            loss = (
+                lam * criterion(outputs, labels_a) + (1 - lam) * criterion(outputs, labels_b)
+                if use_mix else criterion(outputs, labels)
+            )
 
         scaler.scale(loss).backward()
         scaler.step(optimizer)
@@ -61,6 +74,28 @@ def validate(model, loader, criterion, device):
     return running_loss / len(loader.dataset), metrics["accuracy"], metrics["macro_f1"]
 
 
+def mixup_data(x, y, alpha=1.0):
+    """返回 (mixed_x, y_a, y_b, lam)。"""
+    lam = float(torch.distributions.Beta(alpha, alpha).sample()) if alpha > 0 else 1.0
+    idx = randperm(x.size(0), device=x.device)
+    mixed_x = lam * x + (1 - lam) * x[idx]
+    return mixed_x, y, y[idx], lam
+
+
+def cutmix_data(x, y, alpha=1.0):
+    """返回 (mixed_x, y_a, y_b, lam)。"""
+    lam = float(torch.distributions.Beta(alpha, alpha).sample()) if alpha > 0 else 1.0
+    idx = randperm(x.size(0), device=x.device)
+    _, _, H, W = x.shape
+    cx, cy = int(torch.randint(W, (1,))), int(torch.randint(H, (1,)))
+    rw, rh = int(W * np.sqrt(1 - lam)), int(H * np.sqrt(1 - lam))
+    x1, y1 = max(cx - rw // 2, 0), max(cy - rh // 2, 0)
+    x2, y2 = min(cx + rw // 2, W), min(cy + rh // 2, H)
+    x[:, :, y1:y2, x1:x2] = x[idx, :, y1:y2, x1:x2].clone()
+    lam = 1.0 - ((x2 - x1) * (y2 - y1) / (H * W))
+    return x, y, y[idx], lam
+
+
 def train_model(model, train_loader, val_loader, class_names):
     device = torch_device("cuda" if torch.cuda.is_available() else "cpu")
     model = model.to(device)
@@ -73,7 +108,10 @@ def train_model(model, train_loader, val_loader, class_names):
     weights = (1.0 / class_counts.float()).to(device)
     weights = weights / weights.sum()
 
-    criterion = nn.CrossEntropyLoss(weight=weights, label_smoothing=LABEL_SMOOTHING)
+    if USE_FOCAL_LOSS:
+        criterion = FocalLoss(alpha=weights, gamma=FOCAL_GAMMA)
+    else:
+        criterion = nn.CrossEntropyLoss(weight=weights, label_smoothing=LABEL_SMOOTHING)
     scaler = GradScaler("cuda")
 
     # Create timestamped run directory
@@ -100,9 +138,14 @@ def train_model(model, train_loader, val_loader, class_names):
         filter(lambda p: p.requires_grad, model.parameters()),
         lr=LR, weight_decay=WEIGHT_DECAY,
     )
-    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
-        optimizer, T_max=FREEZE_EPOCHS, eta_min=ETA_MIN,
-    )
+    if USE_WARM_RESTARTS:
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(
+            optimizer, T_0=WR_T0, T_mult=WR_T_MULT, eta_min=ETA_MIN,
+        )
+    else:
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
+            optimizer, T_max=FREEZE_EPOCHS, eta_min=ETA_MIN,
+        )
 
     for epoch in range(FREEZE_EPOCHS):
         loss, acc, f1 = train_one_epoch(
@@ -137,9 +180,14 @@ def train_model(model, train_loader, val_loader, class_names):
     print("Phase 2: Full fine-tuning")
     model.unfreeze_all()
     optimizer = torch.optim.AdamW(model.parameters(), lr=LR, weight_decay=WEIGHT_DECAY)
-    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
-        optimizer, T_max=T_MAX, eta_min=ETA_MIN,
-    )
+    if USE_WARM_RESTARTS:
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(
+            optimizer, T_0=WR_T0, T_mult=WR_T_MULT, eta_min=ETA_MIN,
+        )
+    else:
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
+            optimizer, T_max=T_MAX, eta_min=ETA_MIN,
+        )
 
     for epoch in range(EPOCHS):
         loss, acc, f1 = train_one_epoch(
