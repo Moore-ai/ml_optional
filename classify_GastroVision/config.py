@@ -41,7 +41,7 @@ FIGURE_DPI = 150
 # === 精度改进开关 ===
 
 # Focal Loss（True 时替代 CrossEntropyLoss）
-USE_FOCAL_LOSS = False
+USE_FOCAL_LOSS = True
 FOCAL_GAMMA = 1.0
 
 # RandAugment（True 时替代手动增强）
