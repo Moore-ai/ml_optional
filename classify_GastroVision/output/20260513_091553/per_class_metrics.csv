@@ -1,0 +1,28 @@
+class,precision,recall,f1,num_samples
+Accessory tools,0.9474,0.9474,0.9474,190
+Angiectasia,1.0000,0.5000,0.6667,2
+Barrett's esophagus,0.7143,0.3333,0.4545,15
+Blood in lumen,0.6774,0.8077,0.7368,26
+Cecum,0.1935,0.3529,0.2500,17
+Colon diverticula,0.3333,0.5000,0.4000,4
+Colon polyps,0.7181,0.8699,0.7868,123
+Colorectal cancer,0.6190,0.6190,0.6190,21
+Duodenal bulb,0.5128,0.6452,0.5714,31
+Dyed-lifted-polyps,1.0000,0.9048,0.9500,21
+Dyed-resection-margins,0.9722,0.9459,0.9589,37
+Erythema,0.0000,0.0000,0.0000,2
+Esophageal varices,0.0000,0.0000,0.0000,1
+Esophagitis,0.2667,0.2500,0.2581,16
+Gastric polyps,0.5714,0.8000,0.6667,10
+Gastroesophageal_junction_normal z-line,0.7368,0.8400,0.7850,50
+Ileocecal valve,0.4909,0.9000,0.6353,30
+Mucosal inflammation large bowel,0.0000,0.0000,0.0000,4
+Normal esophagus,0.7391,0.8095,0.7727,21
+Normal mucosa and vascular pattern in the large bowel,0.8812,0.6409,0.7421,220
+Normal stomach,0.9549,0.8699,0.9104,146
+Pylorus,0.7432,0.9322,0.8271,59
+Resected polyps,0.4444,0.2857,0.3478,14
+Resection margins,1.0000,0.3333,0.5000,3
+Retroflex rectum,0.7273,0.8000,0.7619,10
+Small bowel_terminal ileum,0.8814,0.8189,0.8490,127
+Ulcer,0.0000,0.0000,0.0000,1
