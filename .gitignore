@@ -12,3 +12,5 @@ classify_Hyper_Kvasir/output/*/checkpoints/
 classify_Hyper_Kvasir/output/*/logs/
 classify_Hyper_Kvasir/output/*/figures/
 !classify_Hyper_Kvasir/output/*/TRAINING_REPORT.md
+
+generate_tables_v2.py
